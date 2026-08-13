@@ -19,26 +19,150 @@ Issues & Safe Fix Instructions
 UXP Panel UI (React / Tailwind)
 ```
 
+The rule engine never talks to Adobe APIs. Each host adapter normalizes its
+document into the shared model in `src/core/models/document.ts`, so every rule
+runs unchanged against both Photoshop and Illustrator files.
+
 ### Setup & Testing
 
-```bash
-# Install dependencies
-npm install
+Requires Node 18 or newer.
 
-# Run unit & integration tests
+```bash
+npm install
+```
+
+```bash
 npm test
 ```
 
-### First Milestone Features
+```bash
+npm run typecheck
+```
 
-- Host-independent core domain model & document normalizer
-- Brand Kit schema definition (`schemas/brand-kit.schema.json`)
-- Perceptual color matcher with near-match color detection (e.g. `#0865FA` → `#0066FF`)
-- Rules engine:
-  - `BG-COLOR-001` (Exact approved colors)
-  - `BG-COLOR-002` (Near-match brand colors)
-  - `BG-TYPE-001` (Approved font families)
-  - `BG-RADIUS-001` (Approved corner radii)
-  - `BG-OPACITY-001` (Approved opacities)
-- Ignore system (by issue, node, rule)
-- Normalized compliance scoring algorithm
+### Running the panel
+
+For UI work, the panel runs in a plain browser against a built-in demo document:
+
+```bash
+npm run dev
+```
+
+To build and package the plugin for Adobe:
+
+```bash
+npm run package:ccx
+```
+
+This produces two things:
+
+- `dist/` — a complete, loadable plugin folder. Point the
+  [UXP Developer Tool](https://developer.adobe.com/photoshop/uxp/devtool/) at it
+  to test the unpacked plugin inside Photoshop or Illustrator.
+- `BrandGuard.ccx` — the packaged plugin archive.
+
+Both are build output and are git-ignored. `manifest.json` at the repository
+root is the source of truth for plugin configuration and is copied into the
+bundle at package time.
+
+> **Note:** `index.html` at the repository root is Vite's build entry and must
+> keep pointing at `/src/ui/main.tsx`. Overwriting it with build output makes
+> every subsequent build silently re-bundle the previous bundle instead of the
+> source.
+
+### Host support
+
+| Capability | Photoshop | Illustrator |
+| --- | --- | --- |
+| Read / write color | ✅ | ✅ |
+| Read / write typography | ✅ | ✅ |
+| Read / write corner radius | ✅ | ❌ ¹ |
+| Read / write effects | ✅ | ❌ |
+| Logo detection | ✅ | ✅ |
+| Document events | ✅ | ❌ |
+
+¹ Corner radius lives on live-shape plugin attributes that the public
+Illustrator scripting API does not expose.
+
+The panel picks its adapter at runtime via `detectHost()` in
+`src/hosts/createHostAdapter.ts`, falling back to Photoshop outside a UXP host
+so the demo document still renders in the browser.
+
+Illustrator specifics handled by the adapter:
+
+- `geometricBounds` is `[left, top, right, bottom]` on a Y-up axis and is
+  normalized to a Y-down box so geometry rules treat both hosts alike.
+- RGB, CMYK, Gray and Spot colors are all resolved to a comparable RGB hex.
+  Gradients, patterns and `NoColor` yield no color and are skipped.
+- Opacity is reported as 0–100 and is rescaled to 0–1.
+
+### Rules
+
+| ID | Rule | Category | Default severity |
+| --- | --- | --- | --- |
+| `BG-COLOR-001` | Unapproved color | color | error |
+| `BG-COLOR-002` | Near-match brand color | color | warning |
+| `BG-TYPE-001` | Approved font family | typography | error |
+| `BG-TYPE-002` | Approved font weight | typography | warning |
+| `BG-TYPE-003` | Approved font size scale / minimum size | typography | warning / error |
+| `BG-RADIUS-001` | Approved corner radius | radius | warning |
+| `BG-STROKE-001` | Approved stroke width | stroke | warning |
+| `BG-OPACITY-001` | Approved opacity | opacity | warning |
+| `BG-SPACE-001` | Spacing grid alignment | spacing | warning |
+| `BG-LOGO-001` | Logo minimum size | logo | error |
+| `BG-LOGO-002` | Logo clear space | logo | warning |
+| `BG-LOGO-003` | Logo aspect ratio (distortion) | logo | critical |
+| `BG-LOGO-004` | Approved logo colorway | logo | error |
+| `BG-NAME-001` | Layer naming convention | naming | info |
+
+Every fix carries a safety level: `safe` fixes change one property in place,
+`review` fixes move or resize geometry and are worth a human glance, and
+`manual` issues have no automatic remedy. `BG-LOGO-002` emits no fix at all,
+because clearing space means moving other people's artwork.
+
+### Brand Kit
+
+Brand Kits are JSON documents validated against
+`schemas/brand-kit.schema.json`. See `examples/acme-brand.brandguard.json` for a
+complete kit. The spacing and logo sections drive the newer rules:
+
+```jsonc
+{
+  "spacing": {
+    "baseUnit": 8,          // positions must be multiples of this
+    "tolerance": 0.5,       // px of slack before flagging
+    "allowedValues": [],    // optional explicit scale, replaces the grid check
+    "checkDimensions": false // also check width/height, not just x/y
+  },
+  "logo": {
+    "enabled": true,
+    "assets": [
+      {
+        "id": "acme-primary-logo",
+        "name": "Acme Primary Logo",
+        "namePatterns": ["logo", "acme-mark"], // regex, matched against layer names
+        "minWidth": 96,
+        "minHeight": 24,
+        "clearSpace": 24,
+        "aspectRatio": 4,
+        "aspectRatioTolerance": 0.02,
+        "allowedColors": ["#0066FF", "#001B44", "#FFFFFF"]
+      }
+    ]
+  }
+}
+```
+
+Rules that depend on optional kit sections stay inert when those sections are
+absent, so an older kit keeps working unchanged.
+
+### Project layout
+
+```
+src/core/      Host-independent domain model, rules, scoring, ignore handling
+src/hosts/     Photoshop and Illustrator adapters + host detection
+src/kits/      Brand Kit import, export, validation, storage
+src/ui/        React UXP panel
+schemas/       Brand Kit JSON schema
+examples/      Sample Brand Kit
+tests/         Vitest unit and integration tests
+```
