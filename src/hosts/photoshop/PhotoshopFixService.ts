@@ -8,94 +8,122 @@ export class PhotoshopFixService {
       return { success: false, message: "Invalid fix instruction payload" };
     }
 
-    // Check UXP runtime
     const isUxp = typeof window !== "undefined" && (window as any).require;
 
     try {
-      switch (fix.type) {
-        case "replaceColor": {
-          const hex = fix.payload.color as string;
-          const rgb = hexToRgb(hex);
-          if (!rgb) return { success: false, message: `Invalid target hex ${hex}` };
+      if (isUxp) {
+        const photoshop = (window as any).require("photoshop");
+        const { action, core } = photoshop;
 
-          if (isUxp) {
-            const { action } = (window as any).require("photoshop");
+        // Adobe Photoshop UXP v23+ requires executing document changes inside executeAsModal
+        const executeFix = async () => {
+          const layerId = parseInt(fix.nodeId, 10);
+          
+          // 1. Select the target layer by ID if layerId is numeric
+          if (!isNaN(layerId)) {
             await action.batchPlay(
               [
                 {
-                  _obj: "set",
-                  _target: [{ _ref: "contentLayer", _enum: "ordinal", _value: "targetEnum" }],
-                  to: {
-                    _obj: "solidColorLayer",
-                    color: { _obj: "RGBColor", red: rgb.r, green: rgb.g, blue: rgb.b },
+                  _obj: "select",
+                  _target: [{ _ref: "layer", _id: layerId }],
+                  makeVisible: false,
+                },
+              ],
+              {}
+            );
+          }
+
+          // 2. Perform fix mutation
+          switch (fix.type) {
+            case "replaceColor": {
+              const hex = fix.payload.color as string;
+              const rgb = hexToRgb(hex);
+              if (!rgb) throw new Error(`Invalid target hex ${hex}`);
+
+              await action.batchPlay(
+                [
+                  {
+                    _obj: "set",
+                    _target: [{ _ref: "contentLayer", _enum: "ordinal", _value: "targetEnum" }],
+                    to: {
+                      _obj: "solidColorLayer",
+                      color: { _obj: "RGBColor", red: rgb.r, green: rgb.g, blue: rgb.b },
+                    },
                   },
-                },
-              ],
-              {}
-            );
-          }
-          return { success: true, message: `Replaced color with ${hex}` };
-        }
+                ],
+                {}
+              );
+              break;
+            }
 
-        case "replaceFont": {
-          const fontFamily = fix.payload.fontFamily as string;
-          if (isUxp) {
-            const { action } = (window as any).require("photoshop");
-            await action.batchPlay(
-              [
-                {
-                  _obj: "set",
-                  _target: [{ _ref: "property", _property: "textKey" }, { _ref: "layer", _enum: "ordinal", _value: "targetEnum" }],
-                  to: { _obj: "textLayer", fontPostScriptName: fontFamily },
-                },
-              ],
-              {}
-            );
-          }
-          return { success: true, message: `Replaced font with ${fontFamily}` };
-        }
+            case "replaceFont": {
+              const fontFamily = fix.payload.fontFamily as string;
+              await action.batchPlay(
+                [
+                  {
+                    _obj: "set",
+                    _target: [
+                      { _ref: "property", _property: "textKey" },
+                      { _ref: "layer", _enum: "ordinal", _value: "targetEnum" },
+                    ],
+                    to: { _obj: "textLayer", fontPostScriptName: fontFamily },
+                  },
+                ],
+                {}
+              );
+              break;
+            }
 
-        case "setOpacity": {
-          const opacityVal = (fix.payload.opacity as number) * 100;
-          if (isUxp) {
-            const { action } = (window as any).require("photoshop");
-            await action.batchPlay(
-              [
-                {
-                  _obj: "set",
-                  _target: [{ _ref: "layer", _enum: "ordinal", _value: "targetEnum" }],
-                  to: { _obj: "layer", opacity: { _unit: "percentUnit", _value: opacityVal } },
-                },
-              ],
-              {}
-            );
-          }
-          return { success: true, message: `Updated opacity to ${opacityVal}%` };
-        }
+            case "setOpacity": {
+              const opacityVal = (fix.payload.opacity as number) * 100;
+              await action.batchPlay(
+                [
+                  {
+                    _obj: "set",
+                    _target: [{ _ref: "layer", _enum: "ordinal", _value: "targetEnum" }],
+                    to: { _obj: "layer", opacity: { _unit: "percentUnit", _value: opacityVal } },
+                  },
+                ],
+                {}
+              );
+              break;
+            }
 
-        case "rename": {
-          const newName = fix.payload.name as string;
-          if (isUxp) {
-            const { action } = (window as any).require("photoshop");
-            await action.batchPlay(
-              [
-                {
-                  _obj: "set",
-                  _target: [{ _ref: "layer", _enum: "ordinal", _value: "targetEnum" }],
-                  to: { _obj: "layer", name: newName },
-                },
-              ],
-              {}
-            );
-          }
-          return { success: true, message: `Renamed layer to ${newName}` };
-        }
+            case "rename": {
+              const newName = fix.payload.name as string;
+              await action.batchPlay(
+                [
+                  {
+                    _obj: "set",
+                    _target: [{ _ref: "layer", _enum: "ordinal", _value: "targetEnum" }],
+                    to: { _obj: "layer", name: newName },
+                  },
+                ],
+                {}
+              );
+              break;
+            }
 
-        default:
-          return { success: false, message: `Fix type ${fix.type} not yet implemented` };
+            default:
+              throw new Error(`Fix type ${fix.type} not supported.`);
+          }
+        };
+
+        if (core && typeof core.executeAsModal === "function") {
+          await core.executeAsModal(executeFix, { commandName: `Brand Guard: ${fix.type}` });
+        } else {
+          await executeFix();
+        }
       }
+
+      return { success: true, message: `Successfully applied ${fix.type}` };
     } catch (err: any) {
-      return { success: false, message: `Photoshop fix failed: ${err.message || String(err)}`, error: err };
+      console.error("[PhotoshopFixService] Error executing UXP fix:", err);
+      return {
+        success: false,
+        message: `Photoshop fix failed: ${err.message || String(err)}`,
+        error: err,
+      };
     }
   }
 }
