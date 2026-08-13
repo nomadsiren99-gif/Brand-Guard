@@ -38,8 +38,7 @@ const manifestObj = {
     }
   ],
   host: [
-    { app: "PS", minVersion: "23.3.0" },
-    { app: "AI", minVersion: "28.0.0" }
+    { app: "PS", minVersion: "23.3.0" }
   ],
   requiredPermissions: {
     network: { domains: "all" },

@@ -17,7 +17,7 @@ import { IssueStore } from "../core/issues/IssueStore";
 import { IgnoreStore } from "../core/ignore/IgnoreStore";
 import { ComplianceScoreService } from "../core/score/ComplianceScoreService";
 import { ScanController } from "../core/scanner/ScanController";
-import { HostAdapterFactory } from "../hosts/HostAdapterFactory";
+import { PhotoshopAdapter } from "../hosts/photoshop/PhotoshopAdapter";
 import { demoDocument } from "../core/fixtures/demoDocument";
 import acmeBrand from "../../examples/acme-brand.brandguard.json";
 
@@ -43,7 +43,7 @@ export const App: React.FC = () => {
   const [scanController] = useState(
     () => new ScanController(ruleRegistry, ruleRunner, issueStore, ignoreStore, scoreService)
   );
-  const [hostAdapter] = useState(() => HostAdapterFactory.getAdapter());
+  const [hostAdapter] = useState(() => new PhotoshopAdapter());
 
   useEffect(() => {
     async function init() {
