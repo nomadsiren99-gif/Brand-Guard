@@ -28,7 +28,7 @@ export class BrandKitStore {
   async createNewBrandKit(): Promise<BrandKit> {
     const count = this.kits.size + 1;
     const newKit: BrandKit = {
-      id: `brand-${Date.now()}`,
+      id: `brand-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       name: `Brand ${count}`,
       version: "1.0.0",
       description: `Custom Brand ${count} Guidelines`,
