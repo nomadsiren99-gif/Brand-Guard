@@ -17,7 +17,7 @@ import { IssueStore } from "../core/issues/IssueStore";
 import { IgnoreStore } from "../core/ignore/IgnoreStore";
 import { ComplianceScoreService } from "../core/score/ComplianceScoreService";
 import { ScanController } from "../core/scanner/ScanController";
-import { PhotoshopAdapter } from "../hosts/photoshop/PhotoshopAdapter";
+import { createHostAdapter } from "../hosts/createHostAdapter";
 import { demoDocument } from "../core/fixtures/demoDocument";
 import acmeBrand from "../../examples/acme-brand.brandguard.json";
 
@@ -43,7 +43,7 @@ export const App: React.FC = () => {
   const [scanController] = useState(
     () => new ScanController(ruleRegistry, ruleRunner, issueStore, ignoreStore, scoreService)
   );
-  const [hostAdapter] = useState(() => new PhotoshopAdapter());
+  const [hostAdapter] = useState(() => createHostAdapter());
 
   useEffect(() => {
     async function init() {
@@ -59,7 +59,7 @@ export const App: React.FC = () => {
       setKits(kitStore.getAllKits());
       setActiveKit(kitStore.getActiveKit());
 
-      // Try reading active Photoshop document if in UXP environment
+      // Try reading the active host document if in a UXP environment
       const activeDoc = await hostAdapter.getActiveDocument();
       if (activeDoc) {
         setDocument(activeDoc);

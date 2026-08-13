@@ -24,6 +24,35 @@ export function rgbToHex(r: number, g: number, b: number): string {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
+/**
+ * Naive CMYK -> RGB conversion. Illustrator documents are frequently in CMYK
+ * mode, and brand kits may store CMYK values. This is device-independent and
+ * ignores ICC profiles, so it is an approximation used only to get colors into
+ * a comparable RGB space.
+ *
+ * Accepts components as 0..100 (Illustrator's range) or 0..1.
+ */
+export function cmykToRgb(c: number, m: number, y: number, k: number): { r: number; g: number; b: number } {
+  const scale = (n: number) => (n > 1 ? n / 100 : n);
+  const cc = scale(c);
+  const mm = scale(m);
+  const yy = scale(y);
+  const kk = scale(k);
+  return {
+    r: Math.round(255 * (1 - cc) * (1 - kk)),
+    g: Math.round(255 * (1 - mm) * (1 - kk)),
+    b: Math.round(255 * (1 - yy) * (1 - kk)),
+  };
+}
+
+/**
+ * Illustrator GrayColor uses 0..100 where 100 is black.
+ */
+export function grayToRgb(gray: number): { r: number; g: number; b: number } {
+  const value = Math.round(255 * (1 - Math.max(0, Math.min(100, gray)) / 100));
+  return { r: value, g: value, b: value };
+}
+
 export function normalizeColor(hexOrRgb: string | { r: number; g: number; b: number }): NormalizedColor {
   if (typeof hexOrRgb === "string") {
     const rgb = hexToRgb(hexOrRgb);
