@@ -2,8 +2,8 @@
   "name": "brand-guard",
   "version": "0.1.0",
   "type": "module",
+  "private": true,
   "description": "Photoshop + Illustrator Brand Compliance Plugin (Design Linter)",
-  "main": "dist/index.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -20,8 +20,19 @@
     "uxp",
     "design-linter"
   ],
-  "author": "",
+  "author": "anuzdhk",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/anuzdhk/Brand-Guard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/anuzdhk/Brand-Guard/issues"
+  },
+  "homepage": "https://github.com/anuzdhk/Brand-Guard#readme",
+  "engines": {
+    "node": ">=18"
+  },
   "devDependencies": {
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",

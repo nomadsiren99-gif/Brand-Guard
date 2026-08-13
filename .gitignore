@@ -2,3 +2,9 @@ node_modules/
 dist/
 .DS_Store
 *.log
+
+# Build output. `assets/` and the packaged plugin are produced by
+# `npm run package:ccx` and must not be committed: the root index.html is
+# Vite's source entry, and stale bundles here silently shadow the real build.
+assets/
+*.ccx
