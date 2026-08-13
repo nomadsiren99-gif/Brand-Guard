@@ -3,6 +3,15 @@ import path from "path";
 import { execSync } from "child_process";
 
 const rootDir = process.cwd();
+const buildDir = path.join(rootDir, "build");
+const psUxpDir = path.join(buildDir, "photoshop-uxp");
+
+// Ensure clean build directories
+if (fs.existsSync(buildDir)) {
+  fs.rmSync(buildDir, { recursive: true, force: true });
+}
+fs.mkdirSync(psUxpDir, { recursive: true });
+
 const iconDir = path.join(rootDir, "icons");
 if (!fs.existsSync(iconDir)) {
   fs.mkdirSync(iconDir, { recursive: true });
@@ -16,9 +25,8 @@ console.log("Building production bundle with Vite...");
 execSync("npm run build", { stdio: "inherit" });
 
 const distDir = path.join(rootDir, "dist");
-const distDistDir = path.join(distDir, "dist");
 
-// Standard manifest object for UXP
+// Standard Photoshop UXP manifest object
 const manifestObj = {
   id: "com.brandguard.adobe.plugin",
   name: "Brand Guard",
@@ -49,43 +57,27 @@ const manifestObj = {
 
 const manifestJson = JSON.stringify(manifestObj, null, 2);
 
-// Copy icons into dist and dist/dist
-function ensureDir(d) {
-  if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
+// Copy assets, index.html, icons, and manifest into dedicated build/photoshop-uxp/ folder
+fs.cpSync(distDir, psUxpDir, { recursive: true });
+fs.writeFileSync(path.join(psUxpDir, "manifest.json"), manifestJson);
+
+const uxpIconsDir = path.join(psUxpDir, "icons");
+if (!fs.existsSync(uxpIconsDir)) {
+  fs.mkdirSync(uxpIconsDir, { recursive: true });
 }
+fs.copyFileSync(path.join(iconDir, "icon-dark.png"), path.join(uxpIconsDir, "icon-dark.png"));
 
-ensureDir(distDir);
-ensureDir(path.join(distDir, "icons"));
-ensureDir(distDistDir);
-ensureDir(path.join(distDistDir, "icons"));
-ensureDir(path.join(distDistDir, "assets"));
-
-// Copy icon
-fs.copyFileSync(path.join(iconDir, "icon-dark.png"), path.join(distDir, "icons", "icon-dark.png"));
-fs.copyFileSync(path.join(iconDir, "icon-dark.png"), path.join(distDistDir, "icons", "icon-dark.png"));
-
-// Copy manifest to root, dist, and dist/dist
+// Mirror manifest to root
 fs.writeFileSync(path.join(rootDir, "manifest.json"), manifestJson);
-fs.writeFileSync(path.join(distDir, "manifest.json"), manifestJson);
-fs.writeFileSync(path.join(distDistDir, "manifest.json"), manifestJson);
 
-// Copy index.html to root, dist, and dist/dist
-fs.copyFileSync(path.join(distDir, "index.html"), path.join(rootDir, "index.html"));
-fs.copyFileSync(path.join(distDir, "index.html"), path.join(distDistDir, "index.html"));
+// Create CCX package inside build/ folder
+const ccxPath = path.join(buildDir, "BrandGuard.ccx");
+const rootCcxPath = path.join(rootDir, "BrandGuard.ccx");
 
-// Copy assets to root and dist/dist
-const rootAssetsDir = path.join(rootDir, "assets");
-if (fs.existsSync(rootAssetsDir)) fs.rmSync(rootAssetsDir, { recursive: true, force: true });
-fs.cpSync(path.join(distDir, "assets"), rootAssetsDir, { recursive: true });
-fs.cpSync(path.join(distDir, "assets"), path.join(distDistDir, "assets"), { recursive: true });
+console.log("Packaging UXP plugin into build/BrandGuard.ccx...");
+execSync(`cd "${psUxpDir}" && zip -r "${ccxPath}" manifest.json index.html assets/ icons/`, { stdio: "inherit" });
+fs.copyFileSync(ccxPath, rootCcxPath);
 
-// Create CCX package
-const ccxPath = path.join(rootDir, "BrandGuard.ccx");
-if (fs.existsSync(ccxPath)) {
-  fs.unlinkSync(ccxPath);
-}
-
-console.log("Packaging flat UXP archive into BrandGuard.ccx...");
-execSync(`cd "${distDir}" && zip -r "${ccxPath}" manifest.json index.html assets/ icons/`, { stdio: "inherit" });
-
-console.log("\nSuccessfully populated manifest.json at root, dist/, and dist/dist/!");
+console.log("\nSuccessfully created dedicated output in build/!");
+console.log(`- UXP Plugin Folder: ${psUxpDir}`);
+console.log(`- Packaged CCX: ${ccxPath}`);
