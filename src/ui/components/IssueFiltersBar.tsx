@@ -79,6 +79,8 @@ export const IssueFiltersBar: React.FC<IssueFiltersBarProps> = ({
           <option value="radius">Radius</option>
           <option value="stroke">Stroke</option>
           <option value="opacity">Opacity</option>
+          <option value="spacing">Spacing</option>
+          <option value="logo">Logo</option>
           <option value="naming">Naming</option>
         </select>
       </div>

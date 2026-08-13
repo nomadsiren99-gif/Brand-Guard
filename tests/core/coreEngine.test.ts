@@ -74,4 +74,44 @@ describe("Brand Guard Core Engine (Milestone 1 Test Flow)", () => {
     expect(rescanResult.issues.find((i) => i.id === colorIssue!.id)).toBeUndefined();
     expect(rescanResult.score).toBeGreaterThan(result.score);
   });
+
+  it("should surface spacing and logo violations through the full scan pipeline", async () => {
+    const kit = acmeBrand as unknown as BrandKit;
+
+    const controller = new ScanController(
+      new RuleRegistry(),
+      new RuleRunner(),
+      new IssueStore(),
+      new IgnoreStore(),
+      new ComplianceScoreService()
+    );
+
+    const { issues } = await controller.scanDocument(demoDocument, kit);
+
+    // Spacing: hero layers sit at x=100, off the 8px grid.
+    const spacingIssue = issues.find((i) => i.nodeId === "hero-heading" && i.category === "spacing");
+    expect(spacingIssue).toBeDefined();
+    expect(spacingIssue?.ruleId).toBe("BG-SPACE-001");
+    expect(spacingIssue?.fix?.payload).toMatchObject({ x: 104 });
+
+    // Logo: 150x30 is a 5.0 ratio against the required 4.0.
+    const ratioIssue = issues.find((i) => i.ruleId === "BG-LOGO-003");
+    expect(ratioIssue).toBeDefined();
+    expect(ratioIssue?.nodeId).toBe("brand-logo");
+    expect(ratioIssue?.severity).toBe("critical");
+
+    // Logo: #FF6B00 is not an approved colorway.
+    const logoColorIssue = issues.find((i) => i.ruleId === "BG-LOGO-004");
+    expect(logoColorIssue).toBeDefined();
+    expect(logoColorIssue?.actual).toBe("#FF6B00");
+    expect(logoColorIssue?.fix?.safety).toBe("safe");
+
+    // Logo: the promo badge sits inside the 24px clear space.
+    const clearSpaceIssue = issues.find((i) => i.ruleId === "BG-LOGO-002");
+    expect(clearSpaceIssue).toBeDefined();
+    expect(clearSpaceIssue?.description).toContain("Promo Badge");
+
+    // The logo is above its 96x24 minimum, so no size violation.
+    expect(issues.find((i) => i.ruleId === "BG-LOGO-001")).toBeUndefined();
+  });
 });

@@ -26,6 +26,7 @@ export interface FixInstruction {
     | "setOpacity"
     | "replaceEffect"
     | "resize"
+    | "setPosition"
     | "rename"
     | "custom";
   safety: "safe" | "review" | "manual";
