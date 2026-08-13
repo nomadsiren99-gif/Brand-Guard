@@ -39,7 +39,12 @@ export const ScanDashboard: React.FC<ScanDashboardProps> = ({
 
   const filteredIssues = issues.filter((issue) => {
     if (issue.state !== "open") return false;
-    if (severityFilter !== "all" && issue.severity !== severityFilter) return false;
+    // "Errors" covers critical too, otherwise critical issues have no tab.
+    const matchesSeverity =
+      severityFilter === "all" ||
+      issue.severity === severityFilter ||
+      (severityFilter === "error" && issue.severity === "critical");
+    if (!matchesSeverity) return false;
     if (categoryFilter !== "all" && issue.category !== categoryFilter) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();

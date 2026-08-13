@@ -72,6 +72,27 @@
     "enabled": true,
     "patterns": ["^[a-z][a-z0-9-]*$"]
   },
+  "spacing": {
+    "baseUnit": 8,
+    "tolerance": 0.5,
+    "checkDimensions": false
+  },
+  "logo": {
+    "enabled": true,
+    "assets": [
+      {
+        "id": "acme-primary-logo",
+        "name": "Acme Primary Logo",
+        "namePatterns": ["logo", "acme-mark"],
+        "minWidth": 96,
+        "minHeight": 24,
+        "clearSpace": 24,
+        "aspectRatio": 4,
+        "aspectRatioTolerance": 0.02,
+        "allowedColors": ["#0066FF", "#001B44", "#FFFFFF"]
+      }
+    ]
+  },
   "metadata": {
     "createdAt": "2026-01-10T10:00:00Z",
     "updatedAt": "2026-08-01T08:00:00Z"

@@ -50,5 +50,33 @@ export const demoDocument: NormalizedDocument = {
       radius: 13, // Non-standard radius (approved: 0, 4, 8, 16, 999)
       opacity: 1.0,
     },
+    {
+      id: "brand-logo",
+      hostId: "layer-104",
+      name: "Header / Logo",
+      type: "image",
+      visible: true,
+      // 150x30 => ratio 5.0, stretched from the required 4.0
+      bounds: { x: 96, y: 40, width: 150, height: 30 },
+      fill: {
+        type: "solid",
+        color: { hex: "#FF6B00" }, // Unapproved logo colorway
+      },
+      opacity: 1.0,
+    },
+    {
+      id: "promo-badge",
+      hostId: "layer-105",
+      name: "Header / Promo Badge",
+      type: "shape",
+      visible: true,
+      // Sits 10px right of the logo, inside its 24px clear space
+      bounds: { x: 256, y: 40, width: 64, height: 32 },
+      fill: {
+        type: "solid",
+        color: { hex: "#0066FF" },
+      },
+      opacity: 1.0,
+    },
   ],
 };
