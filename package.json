@@ -1,0 +1,42 @@
+{
+  "name": "brand-guard",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Photoshop + Illustrator Brand Compliance Plugin (Design Linter)",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "package:ccx": "node package-ccx.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "keywords": [
+    "photoshop",
+    "illustrator",
+    "adobe",
+    "brand-compliance",
+    "uxp",
+    "design-linter"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/react": "^18.2.64",
+    "@types/react-dom": "^18.2.21",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.18",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.1.6",
+    "vitest": "^1.3.1"
+  },
+  "dependencies": {
+    "culori": "^3.3.0",
+    "lucide-react": "^0.354.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "id": "com.brandguard.adobe.plugin",
+  "name": "Brand Guard",
+  "version": "1.0.0",
+  "main": "index.html",
+  "manifestVersion": 5,
+  "entrypoints": [
+    {
+      "type": "panel",
+      "id": "brandGuardPanel",
+      "label": {
+        "default": "Brand Guard"
+      },
+      "minimumSize": {
+        "width": 240,
+        "height": 320
+      },
+      "preferredDockedSize": {
+        "width": 300,
+        "height": 600
+      },
+      "icons": [
+        {
+          "width": 23,
+          "height": 23,
+          "path": "icons/icon-dark.png",
+          "scale": [
+            1,
+            2
+          ],
+          "theme": [
+            "dark",
+            "darkest"
+          ]
+        }
+      ]
+    }
+  ],
+  "host": [
+    {
+      "app": "PS",
+      "minVersion": "23.3.0"
+    },
+    {
+      "app": "AI",
+      "minVersion": "28.0.0"
+    }
+  ],
+  "requiredPermissions": {
+    "network": {
+      "domains": "all"
+    },
+    "clipboard": "readAndWrite",
+    "localFileSystem": "request"
+  }
+}

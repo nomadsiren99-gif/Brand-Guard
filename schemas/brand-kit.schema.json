@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BrandKit",
+  "type": "object",
+  "required": ["id", "name", "version", "colors", "typography"],
+  "properties": {
+    "id": { "type": "string" },
+    "name": { "type": "string" },
+    "version": { "type": "string" },
+    "description": { "type": "string" },
+    "colors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "value"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "value": {
+            "type": "object",
+            "properties": {
+              "hex": { "type": "string", "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$" }
+            }
+          },
+          "tolerance": { "type": "number" },
+          "autoFix": { "type": "boolean" },
+          "roles": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "typography": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "fontFamilies"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "fontFamilies": { "type": "array", "items": { "type": "string" } },
+          "fontWeights": { "type": "array", "items": { "type": "string" } },
+          "sizes": { "type": "array", "items": { "type": "number" } },
+          "minSize": { "type": "number" },
+          "maxSize": { "type": "number" }
+        }
+      }
+    },
+    "radii": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "value"],
+        "properties": {
+          "name": { "type": "string" },
+          "value": { "type": "number" }
+        }
+      }
+    },
+    "strokes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "width"],
+        "properties": {
+          "name": { "type": "string" },
+          "width": { "type": "number" }
+        }
+      }
+    },
+    "approvedOpacities": {
+      "type": "array",
+      "items": { "type": "number" }
+    },
+    "layerNaming": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "patterns": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

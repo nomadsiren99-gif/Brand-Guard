@@ -1,0 +1,79 @@
+{
+  "id": "acme-main",
+  "name": "Acme Brand",
+  "version": "1.4.0",
+  "description": "Primary Acme visual identity",
+  "colors": [
+    {
+      "id": "brand-primary",
+      "name": "Acme Blue",
+      "value": { "hex": "#0066FF" },
+      "roles": ["primary", "button", "link"],
+      "tolerance": 3,
+      "autoFix": true
+    },
+    {
+      "id": "brand-navy",
+      "name": "Navy",
+      "value": { "hex": "#001B44" },
+      "roles": ["dark-background", "text"],
+      "tolerance": 2,
+      "autoFix": true
+    },
+    {
+      "id": "brand-black",
+      "name": "Black",
+      "value": { "hex": "#101114" },
+      "roles": ["text"],
+      "tolerance": 1,
+      "autoFix": true
+    },
+    {
+      "id": "brand-white",
+      "name": "White",
+      "value": { "hex": "#FFFFFF" },
+      "roles": ["background"],
+      "tolerance": 1,
+      "autoFix": true
+    }
+  ],
+  "typography": [
+    {
+      "id": "heading-style",
+      "name": "Headings",
+      "fontFamilies": ["Helvetica Neue"],
+      "fontWeights": ["Bold", "700"],
+      "sizes": [32, 48, 64],
+      "minSize": 24
+    },
+    {
+      "id": "body-style",
+      "name": "Body Text",
+      "fontFamilies": ["Helvetica Neue"],
+      "fontWeights": ["Regular", "400"],
+      "sizes": [14, 16, 18],
+      "minSize": 14
+    }
+  ],
+  "radii": [
+    { "name": "None", "value": 0 },
+    { "name": "Small", "value": 4 },
+    { "name": "Medium", "value": 8 },
+    { "name": "Large", "value": 16 },
+    { "name": "Pill", "value": 999 }
+  ],
+  "strokes": [
+    { "name": "Thin", "width": 1 },
+    { "name": "Medium", "width": 2 },
+    { "name": "Thick", "width": 4 }
+  ],
+  "approvedOpacities": [0.2, 0.4, 0.6, 0.8, 1.0],
+  "layerNaming": {
+    "enabled": true,
+    "patterns": ["^[a-z][a-z0-9-]*$"]
+  },
+  "metadata": {
+    "createdAt": "2026-01-10T10:00:00Z",
+    "updatedAt": "2026-08-01T08:00:00Z"
+  }
+}
