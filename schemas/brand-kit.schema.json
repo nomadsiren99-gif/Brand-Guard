@@ -74,7 +74,46 @@
       "type": "object",
       "properties": {
         "enabled": { "type": "boolean" },
-        "patterns": { "type": "array", "items": { "type": "string" } }
+        "patterns": { "type": "array", "items": { "type": "string" } },
+        "ignoredPrefixes": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "spacing": {
+      "type": "object",
+      "required": ["baseUnit"],
+      "properties": {
+        "baseUnit": { "type": "number", "exclusiveMinimum": 0 },
+        "tolerance": { "type": "number", "minimum": 0 },
+        "allowedValues": { "type": "array", "items": { "type": "number" } },
+        "checkDimensions": { "type": "boolean" }
+      }
+    },
+    "logo": {
+      "type": "object",
+      "required": ["enabled", "assets"],
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "assets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "namePatterns"],
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "namePatterns": { "type": "array", "items": { "type": "string" } },
+              "minWidth": { "type": "number" },
+              "minHeight": { "type": "number" },
+              "clearSpace": { "type": "number" },
+              "aspectRatio": { "type": "number", "exclusiveMinimum": 0 },
+              "aspectRatioTolerance": { "type": "number", "minimum": 0 },
+              "allowedColors": {
+                "type": "array",
+                "items": { "type": "string", "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$" }
+              }
+            }
+          }
+        }
       }
     }
   }

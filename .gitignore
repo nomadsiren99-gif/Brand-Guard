@@ -3,3 +3,8 @@ dist/
 build/
 .DS_Store
 *.log
+
+# Build output. The root index.html is Vite's source entry; a committed
+# bundle here silently shadows the real build.
+assets/
+*.ccx
